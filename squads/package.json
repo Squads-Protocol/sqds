@@ -1,6 +1,6 @@
 {
   "name": "@sqds/squads",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "Library for interacting with the Squads platform",
   "main": "index.js",
   "scripts": {
