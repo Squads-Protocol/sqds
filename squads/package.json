@@ -2,10 +2,13 @@
   "name": "@sqds/squads",
   "version": "0.0.1",
   "description": "Library for interacting with the Squads platform",
-  "main": "index.js",
+  "main": "lib/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsc -d --sourceMap"
   },
+  "files": [
+    "lib/**/*"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/squads-dapp/sqds.git"
@@ -13,12 +16,24 @@
   "keywords": [
     "squads",
     "web3",
-    "daos"
+    "daos",
+    "solana"
   ],
   "author": "Sean Ganser",
   "license": "Apache-2.0",
   "bugs": {
     "url": "https://github.com/squads-dapp/sqds/issues"
   },
-  "homepage": "https://github.com/squads-dapp/sqds#readme"
+  "homepage": "https://github.com/squads-dapp/sqds#readme",
+  "dependencies": {
+    "@solana/web3.js": "^1.36.0",
+    "@project-serum/anchor": "^0.22.1",
+    "@solana/buffer-layout": "^4.0.0",
+    "@solana/spl-token": "^0.2.0"
+  },
+  "devDependencies": {
+    "prettier": "^2.5.1",
+    "ts-node": "^10.7.0",
+    "typescript": "^4.3.5"
+  }
 }
