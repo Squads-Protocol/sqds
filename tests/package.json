@@ -15,16 +15,16 @@
     "@solana/buffer-layout": "^4.0.0",
     "@solana/spl-token": "^0.2.0",
     "@solana/web3.js": "^1.36.0",
-    "bn.js": "^5.2.0",
-    "@sqds/squads": "file:../squads/lib"
+    "@sqds/squads": "file:../squads/lib",
+    "bn.js": "^5.2.0"
   },
   "devDependencies": {
-    "prettier": "^2.5.1",
-    "ts-node": "^10.7.0",
-    "typescript": "^4.3.5",
     "@types/chai": "^4.3.1",
     "@types/mocha": "^9.1.1",
     "chai": "^4.3.6",
-    "mocha": "^10.0.0"
+    "mocha": "^10.0.0",
+    "prettier": "^2.5.1",
+    "ts-node": "^10.7.0",
+    "typescript": "^4.3.5"
   }
 }

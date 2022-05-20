@@ -1,7 +1,14 @@
-import { PublicKey } from "@solana/web3.js";
+import { AccountInfo, PublicKey } from "@solana/web3.js";
+import { Account as SPLTokenAccount } from "@solana/spl-token";
 import BN from "bn.js";
 
 export type SquadsAccountType = typeof Squad;
+
+export interface TokenAccount {
+  pubkey: PublicKey;
+  account: AccountInfo<Buffer>;
+  info: SPLTokenAccount;
+}
 
 export class Squad {
   isInitialized: boolean;
@@ -19,7 +26,9 @@ export class Squad {
   mint: PublicKey;
   proposalNonce: number;
   createdOn: BN;
-  members?: Map<PublicKey, PublicKey>;
+  members?: SquadMember[];
+  solBalance: BN;
+  publicKey: PublicKey;
   randomId: string;
   childIndex: number;
   memberLockIndex: number;
@@ -39,7 +48,9 @@ export class Squad {
     mint: PublicKey;
     proposalNonce: number;
     createdOn: BN;
-    members: Map<PublicKey, PublicKey>;
+    members?: SquadMember[];
+    solBalance: BN;
+    publicKey: PublicKey;
     randomId: string;
     childIndex: number;
     memberLockIndex: number;
@@ -60,13 +71,45 @@ export class Squad {
     this.proposalNonce = args.proposalNonce;
     this.createdOn = args.createdOn;
     this.members = args.members;
+    this.solBalance = args.solBalance;
+    this.publicKey = args.publicKey;
     this.randomId = args.randomId;
     this.childIndex = args.childIndex;
     this.memberLockIndex = args.memberLockIndex;
+  }
+  hasMember(publicKey: PublicKey) {
+    return (
+      this.members.find((member) => member.publicKey.equals(publicKey)) !==
+      undefined
+    );
   }
 }
 
 export class SquadItem {
   account: Squad;
   pubkey: PublicKey;
+}
+
+export class SquadMember {
+  publicKey: PublicKey;
+  equityTokenAccount: TokenAccount;
+  tokens: BN;
+  votingPower: BN;
+  core: boolean;
+  tokenAccount: TokenAccount;
+  constructor(args: {
+    publicKey: PublicKey;
+    equityTokenAccount: TokenAccount;
+    tokens?: BN;
+    votingPower?: BN;
+    core?: boolean;
+    tokenAccount?: TokenAccount;
+  }) {
+    this.publicKey = args.publicKey;
+    this.equityTokenAccount = args.equityTokenAccount;
+    this.tokens = args.tokens ?? new BN(0);
+    this.votingPower = args.votingPower ?? new BN(0);
+    this.core = args.core ?? false;
+    this.tokenAccount = args.tokenAccount;
+  }
 }
