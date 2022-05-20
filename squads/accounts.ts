@@ -1,21 +1,11 @@
-import {
-  AccountInfo,
-  Connection,
-  LAMPORTS_PER_SOL,
-  PublicKey,
-} from "@solana/web3.js";
-import { Account as SPLTokenAccount } from "@solana/spl-token";
+import { Connection, LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
+import { Account as TokenAccount, getMint, Mint } from "@solana/spl-token";
 import BN from "bn.js";
 import { DateTime } from "luxon";
 import { SQUAD_SOL_SEED, SQUADS_PROGRAM_ID } from "./constants";
+import { getMultipleAccounts } from "./splTokenCompat";
 
 export type SquadsAccountType = typeof Squad;
-
-export interface TokenAccount {
-  pubkey: PublicKey;
-  account: AccountInfo<Buffer>;
-  info: SPLTokenAccount;
-}
 
 export class Squad {
   isInitialized: boolean;
@@ -30,15 +20,15 @@ export class Squad {
   token: string;
   admin: PublicKey;
   solAccount: PublicKey;
-  mint: PublicKey;
-  mintAccount?: any; // TODO: get the real type
+  mintAccount: PublicKey;
+  mint?: Mint;
   proposalNonce: number;
   createdOn?: DateTime;
   rawCreatedOn: BN;
   members?: SquadMember[];
   rawMembers: Uint8Array;
   rawMembersByteLength: number;
-  solBalance?: BN;
+  solBalance?: number;
   publicKey: PublicKey;
   randomId: string;
   childIndex: number;
@@ -56,7 +46,7 @@ export class Squad {
     token: string;
     admin: PublicKey;
     solAccount: PublicKey;
-    mint: PublicKey;
+    mintAccount: PublicKey;
     proposalNonce: number;
     rawCreatedOn: BN;
     rawMembers: Uint8Array;
@@ -78,7 +68,7 @@ export class Squad {
     this.token = args.token;
     this.admin = args.admin;
     this.solAccount = args.solAccount;
-    this.mint = args.mint;
+    this.mintAccount = args.mintAccount;
     this.proposalNonce = args.proposalNonce;
     this.rawCreatedOn = args.rawCreatedOn;
     this.rawMembers = args.rawMembers;
@@ -109,28 +99,35 @@ export class Squad {
         });
       });
 
-      if (this.mintAccount === undefined) {
+      if (this.mint === undefined) {
         throw new Error(
-          "Cannot initialize Squad members: mintAccount data has not been fetched"
+          "Cannot initialize Squad members: mint account data has not been fetched"
         );
       }
-      // TODO: figure out TokenAccountParser behavior
-      // const mintSupply = this.mintAccount; // clean this up, throw error if needed and undefined
-      // const govTokens = await getMultipleGovernanceAccounts(
-      //   connection,
-      //   members.map((m) => m.tokenAccount)
-      // );
-      // members.forEach((member, idx) => {
-      //   const tokens = govTokens[idx].info.amount.toNumber();
-      //   const votingPower = parseFloat(
-      //     (((tokens / mintSupply) * 1000) / 10).toFixed(2)
-      //   );
-      //
-      //   member.tokenAccountData = govTokens[idx];
-      //   member.tokens = tokens;
-      //   member.votingPower = votingPower;
-      //   member.core = votingPower > this.coreThreshold;
-      // });
+      const mintSupply: bigint = this.mint.supply;
+      const govTokens = await getMultipleAccounts(
+        connection,
+        members.map((m) => m.tokenAccount)
+      );
+      members.forEach((member, idx) => {
+        // both mintSupply and tokens are bigint
+        // need to adjust for precision in decimals manually
+        const tokens: bigint = govTokens[idx].amount;
+        const precisionAdjustment = BigInt(1000);
+        const scaleAdjustment = BigInt(100);
+        const votingPower: number = parseFloat(
+          (
+            Number(
+              (tokens * precisionAdjustment * scaleAdjustment) / mintSupply
+            ) / Number(precisionAdjustment)
+          ).toFixed(2)
+        );
+
+        member.tokenAccountData = govTokens[idx];
+        member.tokens = tokens;
+        member.votingPower = votingPower;
+        member.core = votingPower > this.coreThreshold;
+      });
     }
 
     const createdTimeNum = this.rawCreatedOn.toNumber();
@@ -138,7 +135,7 @@ export class Squad {
       [this.publicKey.toBytes(), Buffer.from(SQUAD_SOL_SEED)],
       SQUADS_PROGRAM_ID
     );
-    const solInfo = await connection.getBalance(squadSolAccount!);
+    const solInfo: number = await connection.getBalance(squadSolAccount!);
 
     // set values on instance
     this.createdOn = DateTime.fromSeconds(createdTimeNum);
@@ -147,15 +144,7 @@ export class Squad {
   }
 
   async _initMintAccount(connection: Connection) {
-    // mint info
-    const mintAccountInfo = await connection.getAccountInfo(this.mint);
-    // TODO: figure out MintParser behavior
-    // const mintAccount = MintParser(
-    //   new PublicKey(mintAddress!),
-    //   mintAccountInfo
-    // );
-
-    this.mintAccount = mintAccountInfo;
+    this.mint = await getMint(connection, this.mintAccount);
   }
 
   async init(connection: Connection) {
@@ -179,22 +168,22 @@ export class SquadItem {
 export class SquadMember {
   publicKey: PublicKey;
   tokenAccount: PublicKey;
-  tokens: BN;
-  votingPower: BN;
+  tokens: bigint;
+  votingPower: number;
   core: boolean;
   tokenAccountData: TokenAccount;
   constructor(args: {
     publicKey: PublicKey;
     tokenAccount: PublicKey;
-    tokens?: BN;
-    votingPower?: BN;
+    tokens?: bigint;
+    votingPower?: number;
     core?: boolean;
     tokenAccountData?: TokenAccount;
   }) {
     this.publicKey = args.publicKey;
     this.tokenAccount = args.tokenAccount;
-    this.tokens = args.tokens ?? new BN(0);
-    this.votingPower = args.votingPower ?? new BN(0);
+    this.tokens = args.tokens ?? BigInt(0);
+    this.votingPower = args.votingPower ?? 0;
     this.core = args.core ?? false;
     this.tokenAccountData = args.tokenAccountData;
   }

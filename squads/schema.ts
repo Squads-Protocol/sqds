@@ -168,7 +168,7 @@ export const SquadsSchema = new Map<SquadsAccountType, Structure<any>>([
       Layout.fixedUtf8(6, "token"),
       Layout.seq(Layout.u8(), 5), // future settings placeholders
       Layout.pubkey("admin"),
-      Layout.pubkey("mint"),
+      Layout.pubkey("mintAccount"),
       Layout.pubkey("solAccount"),
       Layout.seq(Layout.seq(Layout.u8(), 32), 5), // future address placeholders
       Layout.u32("proposalNonce"),
