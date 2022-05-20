@@ -1,4 +1,4 @@
-import Squads from "@sqds/squads";
+import Squads from "@sqds/squads-local";
 import { PublicKey } from "@solana/web3.js";
 import { assert, expect } from "chai";
 
