@@ -172,9 +172,10 @@ export const SquadsSchema = new Map<SquadsAccountType, Structure<any>>([
       Layout.pubkey("solAccount"),
       Layout.seq(Layout.seq(Layout.u8(), 32), 5), // future address placeholders
       Layout.u32("proposalNonce"),
-      Layout.i64("createdOn"),
-      Layout.u32(), // members length (redundant)
-      Layout.seq(Layout.u8(), 9604), // skipping members for now,
+      Layout.i64("rawCreatedOn"), // raw because this is later converted to DateTime
+      Layout.u32("rawMembersByteLength"),
+      Layout.u32(), // also members length from borsh (can be ignored)
+      Layout.blob(9600, "rawMembers"),
       Layout.fixedUtf8(10, "randomId"),
       Layout.u32("childIndex"),
       Layout.u32("memberLockIndex"),

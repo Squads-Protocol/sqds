@@ -34,5 +34,10 @@ export const getSquad = async (
   if (!layout) throw new Error("Missing schema entry for Squad!");
 
   const accountInfo = await connection.getAccountInfo(squad, commitment);
-  return layout.decode(accountInfo.data);
+  const squadInstance: Squad = new Squad({
+    ...layout.decode(accountInfo.data),
+    publicKey: squad,
+  });
+  await squadInstance.init(connection);
+  return squadInstance;
 };

@@ -16,7 +16,8 @@
     "@solana/spl-token": "^0.2.0",
     "@solana/web3.js": "^1.36.0",
     "@sqds/squads": "file:../squads/lib",
-    "bn.js": "^5.2.0"
+    "bn.js": "^5.2.0",
+    "luxon": "^2.4.0"
   },
   "devDependencies": {
     "@types/chai": "^4.3.1",
