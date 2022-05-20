@@ -184,11 +184,6 @@ export class Squad {
   }
 }
 
-export class SquadItem {
-  account: Squad;
-  pubkey: PublicKey;
-}
-
 export class SquadMember {
   publicKey: PublicKey;
   tokenAccount: PublicKey;

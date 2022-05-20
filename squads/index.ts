@@ -1,7 +1,7 @@
 import { Connection, PublicKey } from "@solana/web3.js";
 import { SQUADS_PROGRAM_ID } from "./constants";
 import { getSquad, getSquads } from "./api";
-import { Squad, SquadItem } from "./accounts";
+import { Squad } from "./accounts";
 
 class Squads {
   connection: Connection;
@@ -33,8 +33,8 @@ class Squads {
     return await getSquad(this.connection, squad);
   }
 
-  async getAllSquads(): Promise<SquadItem[]> {
-    return await getSquads(this.programId, this.connection);
+  async getSquads(squads: PublicKey[]): Promise<Squad[]> {
+    return await getSquads(this.programId, this.connection, squads);
   }
 }
 

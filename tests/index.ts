@@ -7,7 +7,7 @@ describe("Squads", function () {
     const squad = await Squads.mainnet().getSquad(
       new PublicKey("91RVTZF6Qvfr1TaVQFGZjMhNTw7xeVbYkkB8crpHFfyS")
     );
-    expect(squad.randomId === "eE2NDxrlqH");
+    expect(squad.randomId).to.equal("eE2NDxrlqH");
   });
   it("checks membership in squad", async function () {
     const squad = await Squads.mainnet().getSquad(
@@ -23,13 +23,13 @@ describe("Squads", function () {
     const squad = await Squads.mainnet().getSquad(
       new PublicKey("91RVTZF6Qvfr1TaVQFGZjMhNTw7xeVbYkkB8crpHFfyS")
     );
-    expect(squad.solBalance === 0.005);
+    expect(squad.solBalance).to.equal(0.005);
   });
   it("pulls mint account info for squad", async function () {
     const squad = await Squads.mainnet().getSquad(
       new PublicKey("91RVTZF6Qvfr1TaVQFGZjMhNTw7xeVbYkkB8crpHFfyS")
     );
-    expect(squad.mint.supply === BigInt(120000));
+    expect(squad.mint.supply).to.equal(BigInt(120000));
   });
   it("pulls equity token account info for members", async function () {
     const squad = await Squads.mainnet().getSquad(
@@ -40,6 +40,18 @@ describe("Squads", function () {
         new PublicKey("7RvgFAdNDibFxnNuquea3LHdmtZ5gbupwNA6UvP6kXWQ")
       )
     );
-    expect(squadMember.tokenAccountData.amount === BigInt(20000));
+    expect(squadMember.tokenAccountData.amount).to.equal(BigInt(20000));
+  });
+  it("pulls multiple squads at once", async function () {
+    const squads = await Squads.devnet();
+    const squad1 = new PublicKey(
+      "GuqKt3p43GV8Gzxx8U1uNZiSTYSAxAYjT4GPcZ91bArJ"
+    );
+    const squad2 = new PublicKey(
+      "FuUZ6YVK8g5743FwjF1Dbw3yknrbHPPxhxo35ikw89xq"
+    );
+    const squadsData = await squads.getSquads([squad1, squad2]);
+    expect(squadsData[0].randomId).to.equal("bAjOtzMUdp");
+    expect(squadsData[1].randomId).to.equal("jXweyhvp3R");
   });
 });
