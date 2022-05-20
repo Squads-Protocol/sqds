@@ -7,11 +7,16 @@ import { getMultipleAccounts } from "./splTokenCompat";
 
 export type SquadsAccountType = typeof Squad;
 
+export enum SquadAllocationType {
+  TeamCoordination = 1,
+  MultiSig,
+}
+
 export class Squad {
   isInitialized: boolean;
   open: boolean;
   emergencyLock: boolean;
-  allocationType: number;
+  allocationType: SquadAllocationType;
   voteSupport: number;
   voteQuorum: number;
   coreThreshold: number;
@@ -59,6 +64,11 @@ export class Squad {
     this.isInitialized = args.isInitialized;
     this.open = args.open;
     this.emergencyLock = args.emergencyLock;
+    if (args.allocationType <= 0 || args.allocationType > 2) {
+      throw new Error(
+        `Invalid allocationType for Squad: ${args.allocationType}. Must be 1 (Teams) or 2 (MultiSig)`
+      );
+    }
     this.allocationType = args.allocationType;
     this.voteSupport = args.voteSupport;
     this.voteQuorum = args.voteQuorum;
@@ -99,35 +109,46 @@ export class Squad {
         });
       });
 
-      if (this.mint === undefined) {
-        throw new Error(
-          "Cannot initialize Squad members: mint account data has not been fetched"
+      if (this.allocationType === SquadAllocationType.TeamCoordination) {
+        // Only need to deserialize token accounts and calculate voting power if this is a Teams-type Squad
+        if (this.mint === undefined) {
+          throw new Error(
+            "Cannot initialize Squad members: mint account data has not been fetched"
+          );
+        }
+        const mintSupply: bigint = this.mint.supply;
+        const govTokens = await getMultipleAccounts(
+          connection,
+          members.map((m) => m.tokenAccount)
         );
-      }
-      const mintSupply: bigint = this.mint.supply;
-      const govTokens = await getMultipleAccounts(
-        connection,
-        members.map((m) => m.tokenAccount)
-      );
-      members.forEach((member, idx) => {
-        // both mintSupply and tokens are bigint
-        // need to adjust for precision in decimals manually
-        const tokens: bigint = govTokens[idx].amount;
-        const precisionAdjustment = BigInt(1000);
-        const scaleAdjustment = BigInt(100);
-        const votingPower: number = parseFloat(
-          (
-            Number(
-              (tokens * precisionAdjustment * scaleAdjustment) / mintSupply
-            ) / Number(precisionAdjustment)
-          ).toFixed(2)
-        );
+        members.forEach((member, idx) => {
+          // both mintSupply and tokens are bigint
+          // need to adjust for precision in decimals manually
+          const tokens: bigint = govTokens[idx].amount;
+          const precisionAdjustment = BigInt(1000);
+          const scaleAdjustment = BigInt(100);
+          const votingPower: number = parseFloat(
+            (
+              Number(
+                (tokens * precisionAdjustment * scaleAdjustment) / mintSupply
+              ) / Number(precisionAdjustment)
+            ).toFixed(2)
+          );
 
-        member.tokenAccountData = govTokens[idx];
-        member.tokens = tokens;
-        member.votingPower = votingPower;
-        member.core = votingPower > this.coreThreshold;
-      });
+          member.tokenAccountData = govTokens[idx];
+          member.tokens = tokens;
+          member.votingPower = votingPower;
+          member.core = votingPower > this.coreThreshold;
+        });
+      } else {
+        // This is a MultiSig-type Squad, set truthy placeholder values to indicate
+        // the members have been initialized
+        members.forEach((member) => {
+          member.tokens = BigInt(1);
+          member.votingPower = 1;
+          member.core = true;
+        });
+      }
     }
 
     const createdTimeNum = this.rawCreatedOn.toNumber();
@@ -144,7 +165,10 @@ export class Squad {
   }
 
   async _initMintAccount(connection: Connection) {
-    this.mint = await getMint(connection, this.mintAccount);
+    if (this.allocationType === SquadAllocationType.TeamCoordination) {
+      // Only need to fetch mint information if this is a Teams-type Squad
+      this.mint = await getMint(connection, this.mintAccount);
+    }
   }
 
   async init(connection: Connection) {
