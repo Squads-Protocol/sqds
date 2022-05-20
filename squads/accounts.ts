@@ -24,10 +24,10 @@ export class Squad {
   mint?: Mint;
   proposalNonce: number;
   createdOn?: DateTime;
-  rawCreatedOn: BN;
+  private rawCreatedOn: BN;
   members?: SquadMember[];
-  rawMembers: Uint8Array;
-  rawMembersByteLength: number;
+  private rawMembers: Uint8Array;
+  private rawMembersByteLength: number;
   solBalance?: number;
   publicKey: PublicKey;
   randomId: string;
