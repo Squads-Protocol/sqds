@@ -8,9 +8,9 @@ import { SquadsSchema } from "./schema";
 import { Squad } from "./accounts";
 
 export const getSquads = async (
-  programId: PublicKey,
   connection: Connection,
   squads: PublicKey[],
+  programId?: PublicKey,
   commitment?: Commitment
 ): Promise<Squad[]> => {
   const layout = SquadsSchema.get(Squad);
@@ -34,7 +34,7 @@ export const getSquads = async (
     });
     // NOTE: This initialization will make additional queries for each Squad
     // it can be optimized further by creating a bulk init method etc.
-    await squadInstance.init(connection);
+    await squadInstance.init(connection, programId, commitment);
     squadItems.push(squadInstance);
   }
   return squadItems;
@@ -43,6 +43,7 @@ export const getSquads = async (
 export const getSquad = async (
   connection: Connection,
   squad: PublicKey,
+  programId?: PublicKey,
   commitment?: Commitment
 ): Promise<Squad> => {
   const layout = SquadsSchema.get(Squad);
@@ -53,6 +54,6 @@ export const getSquad = async (
     ...layout.decode(accountInfo.data),
     publicKey: squad,
   });
-  await squadInstance.init(connection);
+  await squadInstance.init(connection, programId, commitment);
   return squadInstance;
 };

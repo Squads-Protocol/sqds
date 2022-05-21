@@ -30,11 +30,11 @@ class Squads {
   }
 
   async getSquad(squad: PublicKey): Promise<Squad> {
-    return await getSquad(this.connection, squad);
+    return await getSquad(this.connection, squad, this.programId);
   }
 
   async getSquads(squads: PublicKey[]): Promise<Squad[]> {
-    return await getSquads(this.programId, this.connection, squads);
+    return await getSquads(this.connection, squads, this.programId);
   }
 }
 

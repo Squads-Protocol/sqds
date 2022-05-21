@@ -1,8 +1,13 @@
-import { Connection, LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
+import {
+  Commitment,
+  Connection,
+  LAMPORTS_PER_SOL,
+  PublicKey,
+} from "@solana/web3.js";
 import { Account as TokenAccount, getMint, Mint } from "@solana/spl-token";
 import BN from "bn.js";
 import { DateTime } from "luxon";
-import { SQUAD_SOL_SEED, SQUADS_PROGRAM_ID } from "./constants";
+import { SQUAD_SOL_SEED } from "./constants";
 import { getMultipleAccounts } from "./splTokenCompat";
 
 export type SquadsAccountType = typeof Squad;
@@ -89,7 +94,11 @@ export class Squad {
     this.memberLockIndex = args.memberLockIndex;
   }
 
-  async _initMembers(connection: Connection) {
+  async _initMembers(
+    connection: Connection,
+    programId?: PublicKey,
+    commitment?: Commitment
+  ) {
     let members: SquadMember[] = [];
     if (this.rawMembersByteLength > 4) {
       const memberObjs = [];
@@ -119,7 +128,8 @@ export class Squad {
         const mintSupply: bigint = this.mint.supply;
         const govTokens = await getMultipleAccounts(
           connection,
-          members.map((m) => m.tokenAccount)
+          members.map((m) => m.tokenAccount),
+          commitment
         );
         members.forEach((member, idx) => {
           // both mintSupply and tokens are bigint
@@ -154,9 +164,12 @@ export class Squad {
     const createdTimeNum = this.rawCreatedOn.toNumber();
     const [squadSolAccount] = await PublicKey.findProgramAddress(
       [this.publicKey.toBytes(), Buffer.from(SQUAD_SOL_SEED)],
-      SQUADS_PROGRAM_ID
+      programId
     );
-    const solInfo: number = await connection.getBalance(squadSolAccount!);
+    const solInfo: number = await connection.getBalance(
+      squadSolAccount,
+      commitment
+    );
 
     // set values on instance
     this.createdOn = DateTime.fromSeconds(createdTimeNum);
@@ -164,16 +177,20 @@ export class Squad {
     this.solBalance = solInfo / LAMPORTS_PER_SOL;
   }
 
-  async _initMintAccount(connection: Connection) {
+  async _initMintAccount(connection: Connection, commitment?: Commitment) {
     if (this.allocationType === SquadAllocationType.TeamCoordination) {
       // Only need to fetch mint information if this is a Teams-type Squad
-      this.mint = await getMint(connection, this.mintAccount);
+      this.mint = await getMint(connection, this.mintAccount, commitment);
     }
   }
 
-  async init(connection: Connection) {
-    await this._initMintAccount(connection);
-    await this._initMembers(connection);
+  async init(
+    connection: Connection,
+    programId?: PublicKey,
+    commitment?: Commitment
+  ) {
+    await this._initMintAccount(connection, commitment);
+    await this._initMembers(connection, programId, commitment);
   }
 
   hasMember(publicKey: PublicKey): boolean {
