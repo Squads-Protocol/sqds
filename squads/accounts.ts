@@ -102,9 +102,12 @@ export class Squad {
     let members: SquadMember[] = [];
     if (this.rawMembersByteLength > 4) {
       const memberObjs = [];
+
+      // Slice of the populated members array
+      // Subtract 4 from the bytelength because it includes the length itself as u32 (4 bytes)
       const memberMap = this.rawMembers.slice(0, this.rawMembersByteLength - 4);
-      // slice of the actual used members array
       for (let i = 0; i < memberMap.length; i += 64) {
+        // Each member is serialized to two PublicKeys (32 bytes each)
         memberObjs.push(memberMap.slice(i, i + 64));
       }
 
@@ -132,8 +135,8 @@ export class Squad {
           commitment
         );
         members.forEach((member, idx) => {
-          // both mintSupply and tokens are bigint
-          // need to adjust for precision in decimals manually
+          // Both mintSupply and tokens are type: bigint
+          // so we need to adjust for precision in decimals manually (only integer division is possible w/ bigint)
           const tokens: bigint = govTokens[idx].amount;
           const precisionAdjustment = BigInt(1000);
           const scaleAdjustment = BigInt(100);
@@ -161,7 +164,7 @@ export class Squad {
       }
     }
 
-    const createdTimeNum = this.rawCreatedOn.toNumber();
+    // Fetch the Squad SOL account and store the balance on this instance
     const [squadSolAccount] = await PublicKey.findProgramAddress(
       [this.publicKey.toBytes(), Buffer.from(SQUAD_SOL_SEED)],
       programId
@@ -171,8 +174,8 @@ export class Squad {
       commitment
     );
 
-    // set values on instance
-    this.createdOn = DateTime.fromSeconds(createdTimeNum);
+    // Set values on this instance
+    this.createdOn = DateTime.fromSeconds(this.rawCreatedOn.toNumber());
     this.members = members;
     this.solBalance = solInfo / LAMPORTS_PER_SOL;
   }
@@ -184,6 +187,10 @@ export class Squad {
     }
   }
 
+  /**
+   * Initializes the Squad instance by fetching additional data (e.g. Member Tokens, Mint) from the chain.
+   * This function should be called right after deserialization.
+   */
   async init(
     connection: Connection,
     programId?: PublicKey,

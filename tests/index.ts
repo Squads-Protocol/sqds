@@ -2,6 +2,8 @@ import Squads from "@sqds/squads-local";
 import { PublicKey } from "@solana/web3.js";
 import { assert, expect } from "chai";
 
+// NOTE: The addresses used in these tests may need to be updated periodically if the data changes.
+
 describe("Squads", function () {
   it("fetches a squad from mainnet", async function () {
     const squad = await Squads.mainnet().getSquad(
