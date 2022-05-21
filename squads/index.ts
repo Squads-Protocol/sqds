@@ -10,6 +10,12 @@ class Squads {
     this.connection = args.connection;
     this.programId = args.programId ?? SQUADS_PROGRAM_ID;
   }
+  static endpoint(endpoint: string) {
+    return new Squads({
+      connection: new Connection(endpoint),
+      programId: SQUADS_PROGRAM_ID,
+    });
+  }
   static mainnet() {
     return new Squads({
       connection: new Connection("https://api.mainnet-beta.solana.com"),

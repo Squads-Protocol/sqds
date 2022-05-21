@@ -54,4 +54,11 @@ describe("Squads", function () {
     expect(squadsData[0].randomId).to.equal("bAjOtzMUdp");
     expect(squadsData[1].randomId).to.equal("jXweyhvp3R");
   });
+  it("can be constructed toward custom endpoint", async function () {
+    const squads = await Squads.endpoint("https://api.devnet.solana.com");
+    const squad = await squads.getSquad(
+      new PublicKey("GuqKt3p43GV8Gzxx8U1uNZiSTYSAxAYjT4GPcZ91bArJ")
+    );
+    expect(squad.randomId).to.equal("bAjOtzMUdp");
+  });
 });
