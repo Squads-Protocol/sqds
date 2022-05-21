@@ -108,6 +108,3 @@ dist
 
 # Built files
 lib/
-
-# TEMP: reference file for sdk implementation
-lib_reference.ts
