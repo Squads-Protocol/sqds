@@ -102,3 +102,9 @@ dist
 
 # TernJS port file
 .tern-port
+
+# Pycharm
+.idea/
+
+# Built files
+lib/

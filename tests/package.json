@@ -1,25 +1,11 @@
 {
-  "name": "@sqds/squads",
+  "name": "tests",
   "version": "0.0.1",
-  "description": "Library for interacting with the Squads platform",
-  "main": "lib/index.js",
+  "description": "tests for @sqds/squads SDK",
+  "main": "index.ts",
   "scripts": {
-    "build": "tsc -d --sourceMap"
+    "test": "mocha -r ts-node/register index.ts"
   },
-  "files": [
-    "lib/**/*"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/squads-dapp/sqds.git"
-  },
-  "keywords": [
-    "squads",
-    "web3",
-    "daos",
-    "solana"
-  ],
-  "author": "Sean Ganser",
   "license": "Apache-2.0",
   "bugs": {
     "url": "https://github.com/squads-dapp/sqds/issues"
@@ -29,11 +15,17 @@
     "@solana/buffer-layout": "^4.0.0",
     "@solana/spl-token": "^0.2.0",
     "@solana/web3.js": "^1.36.0",
+    "@sqds/squads-local": "file:../squads/lib",
     "bn.js": "^5.2.0",
     "luxon": "^2.4.0"
   },
   "devDependencies": {
+    "@types/chai": "^4.3.1",
+    "@types/mocha": "^9.1.1",
+    "chai": "^4.3.6",
+    "mocha": "^10.0.0",
     "prettier": "^2.5.1",
+    "ts-node": "^10.7.0",
     "typescript": "^4.3.5"
   }
 }
