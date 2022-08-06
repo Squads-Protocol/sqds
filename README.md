@@ -1,5 +1,5 @@
 # @sqds/squads
-## A Library to Interact with the Squads Platform
+## A Library to Interact with Squads V2
 
 ### Development
 
